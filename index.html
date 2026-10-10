@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jago Matematika SD - Belajar Seru Kelas 1-6</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase SDK (Modular v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Konfigurasi Firebase (Demo/Public Config - Ganti dengan config asli Anda jika ingin database privat)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDummyKeyForJagoMatematikaSD2026",
+            authDomain: "jagomatematika-sd.firebaseapp.com",
+            projectId: "jagomatematika-sd",
+            storageBucket: "jagomatematika-sd.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abcdef1234567890"
+        };
+
+        // Inisialisasi Firebase
+        let db = null;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            window.isFirebaseConnected = true;
+        } catch (e) {
+            console.log("Menggunakan mode local storage / offline fallback", e);
+            window.isFirebaseConnected = false;
+        }
+        window.db = db;
+    </script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 min-h-screen text-gray-800 flex flex-col">
+
+    <header class="bg-white/90 backdrop-blur-md shadow-md py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="goHome()">
+                <span class="text-3xl">🧮</span>
+                <h1 class="text-xl md:text-2xl font-extrabold text-indigo-600">JagoMatematika SD</h1>
+            </div>
+            <div id="userInfo" class="text-xs md:text-sm font-semibold text-gray-600 bg-indigo-50 px-3.5 py-2 rounded-full border border-indigo-100 flex items-center space-x-2 shadow-sm">
+                <span>👤 Memuat Profil...</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-4xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
+
+        <!-- HOME VIEW: PILIH KELAS -->
+        <div id="homeView" class="bg-white rounded-3xl shadow-2xl p-6 md:p-10 text-center transition-all duration-300">
+            <div class="mb-6">
+                <span class="inline-block bg-pink-100 text-pink-600 font-bold px-4 py-1.5 rounded-full text-sm mb-3">🎓 Belajar Seru & Tersimpan di Cloud!</span>
+                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3">Pilih Kelas Kamu Sekarang</h2>
+                <p class="text-gray-500 text-sm md:text-base max-w-md mx-auto">Pilih jenjang kelas sekolah dasar untuk mulai berlatih soal matematika interaktif.</p>
+            </div>
+
+            <!-- Tombol Pengaturan Profil -->
+            <div class="mb-6 flex justify-center">
+                <button onclick="openProfileModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-2xl shadow-md transition transform hover:scale-105 flex items-center gap-2 text-sm">
+                    <span>✏️</span> Ubah Profil / Sekolah Siswa
+                </button>
+            </div>
+
+            <!-- Grid Kelas 1 - 6 -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+                <button onclick="startQuiz(1)" class="group bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200 hover:border-blue-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left flex flex-col justify-between">
+                    <span class="text-3xl mb-2">⭐</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-blue-900">Kelas 1</h3>
+                        <p class="text-xs text-blue-700 font-medium">Penjumlahan & Pengurangan Dasar</p>
+                    </div>
+                </button>
+
+                <button onclick="startQuiz(2)" class="group bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200 hover:border-green-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left flex flex-col justify-between">
+                    <span class="text-3xl mb-2">🎈</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-green-900">Kelas 2</h3>
+                        <p class="text-xs text-green-700 font-medium">Hitung Cepat & Bilangan 1-100</p>
+                    </div>
+                </button>
+
+                <button onclick="startQuiz(3)" class="group bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200 hover:border-yellow-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left flex flex-col justify-between">
+                    <span class="text-3xl mb-2">🚀</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-yellow-900">Kelas 3</h3>
+                        <p class="text-xs text-yellow-700 font-medium">Perkalian & Pembagian Dasar</p>
+                    </div>
+                </button>
+
+                <button onclick="startQuiz(4)" class="group bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 hover:border-orange-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left flex flex-col justify-between">
+                    <span class="text-3xl mb-2">🏆</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-orange-900">Kelas 4</h3>
+                        <p class="text-xs text-orange-700 font-medium">Pecahan & Kelipatan Bilangan</p>
+                    </div>
+                </button>
+
+                <button onclick="startQuiz(5)" class="group bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200 hover:border-purple-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left flex flex-col justify-between">
+                    <span class="text-3xl mb-2">💎</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-purple-900">Kelas 5</h3>
+                        <p class="text-xs text-purple-700 font-medium">Luas, Volume & Pecahan Lanjut</p>
+                    </div>
+                </button>
+
+                <button onclick="startQuiz(6)" class="group bg-gradient-to-br from-pink-50 to-pink-100 border-2 border-pink-200 hover:border-pink-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition text-left flex flex-col justify-between">
+                    <span class="text-3xl mb-2">👑</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-pink-900">Kelas 6</h3>
+                        <p class="text-xs text-pink-700 font-medium">Statistika & Aljabar Sederhana</p>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Tombol Leaderboard Cloud -->
+            <div>
+                <button onclick="openLeaderboard()" class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg transition transform hover:scale-[1.01] flex items-center justify-center gap-2 text-base">
+                    <span>🏆</span> Lihat Papan Skor Cloud (Filter Sekolah)
+                </button>
+            </div>
+        </div>
+
+        <!-- QUIZ VIEW (Hidden by default) -->
+        <div id="quizView" class="hidden bg-white rounded-3xl shadow-2xl p-6 md:p-10 transition-all duration-300">
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+                <div>
+                    <span id="quizClassBadge" class="bg-indigo-100 text-indigo-700 font-bold px-3 py-1 rounded-full text-xs">Kelas 1</span>
+                    <h3 id="questionCounter" class="text-lg font-extrabold text-gray-900 mt-1">Soal 1 dari 10</h3>
+                </div>
+                <button onclick="goHome()" class="text-gray-400 hover:text-gray-600 font-semibold text-sm bg-gray-100 hover:bg-gray-200 px-3.5 py-1.5 rounded-full transition">
+                    Keluar ✕
+                </button>
+            </div>
+
+            <!-- Soal Pertanyaan -->
+            <div class="mb-8 text-center bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100">
+                <h4 id="questionText" class="text-2xl md:text-3xl font-extrabold text-indigo-900 mb-2">Memuat soal...</h4>
+            </div>
+
+            <!-- Pilihan Jawaban -->
+            <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- Tombol Opsi akan digenerate via Javascript -->
+            </div>
+        </div>
+
+        <!-- RESULT VIEW (Hidden by default) -->
+        <div id="resultView" class="hidden bg-white rounded-3xl shadow-2xl p-6 md:p-10 text-center transition-all duration-300">
+            <div class="text-6xl mb-4" id="resultEmoji">🎉</div>
+            <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Kuis Selesai!</h2>
+            <p class="text-gray-500 mb-6 text-sm">Skor kamu telah berhasil disimpan secara online ke Cloud.</p>
+
+            <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 max-w-sm mx-auto mb-8 shadow-inner">
+                <span class="text-xs uppercase tracking-wider text-indigo-500 font-bold block mb-1">Total Skor Kamu</span>
+                <span id="finalScore" class="text-5xl font-extrabold text-indigo-600">100</span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-3">
+                <button onclick="restartQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition">
+                    🔄 Mainkan Lagi
+                </button>
+                <button onclick="openLeaderboard()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition">
+                    🏆 Cek Papan Skor
+                </button>
+                <button onclick="goHome()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 px-6 rounded-2xl transition">
+                    🏠 Menu Utama
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL PROFIL SISWA & SEKOLAH -->
+    <div id="profileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                <h3 class="text-lg font-extrabold text-gray-900">👤 Identitas Siswa & Sekolah</h3>
+                <button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+            <p class="text-xs text-gray-500 mb-4">Masukkan nama lengkap dan sekolahmu agar guru bisa melihat nilai kamu di papan skor.</p>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Nama Siswa:</label>
+                    <input type="text" id="inputStudentName" placeholder="Contoh: Budi Santoso" class="w-full border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded-xl px-4 py-2.5 text-sm outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 mb-1">Nama Sekolah / Madrasah:</label>
+                    <input type="text" id="inputSchoolName" placeholder="Contoh: SDN 01 Merdeka" class="w-full border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded-xl px-4 py-2.5 text-sm outline-none transition">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <button onclick="closeProfileModal()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-2.5 rounded-xl text-sm transition">Batal</button>
+                <button onclick="saveProfile()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-md transition">Simpan Profil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LEADERBOARD (DENGAN FILTER SEKOLAH) -->
+    <div id="leaderboardModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl transform transition-all flex flex-col max-h-[85vh]">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                <h3 class="text-lg font-extrabold text-gray-900 flex items-center gap-1.5">
+                    <span>🏆</span> Papan Skor Cloud Siswa
+                </h3>
+                <button onclick="closeLeaderboard()" class="text-gray-400 hover:text-gray-600 font-bold">✕</button>
+            </div>
+
+            <!-- Filter Sekolah Dropdown -->
+            <div class="mb-4 bg-indigo-50 p-3 rounded-2xl border border-indigo-100 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <label class="text-xs font-bold text-indigo-900">Filter Sekolah:</label>
+                <select id="schoolFilterDropdown" onchange="filterLeaderboardBySchool()" class="w-full sm:w-auto bg-white border border-indigo-200 text-indigo-900 font-semibold text-xs rounded-xl px-3 py-2 outline-none shadow-sm">
+                    <option value="ALL">🌐 Semua Sekolah (Global)</option>
+                </select>
+            </div>
+
+            <!-- List Papan Skor -->
+            <div id="leaderboardListContainer" class="flex-grow overflow-y-auto space-y-2 pr-1 mb-4">
+                <div class="text-center py-8 text-gray-400 text-sm">Memuat data dari cloud...</div>
+            </div>
+
+            <div class="text-center pt-2 border-t">
+                <button onclick="closeLeaderboard()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm shadow-md transition w-full sm:w-auto">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Global Aplikasi
+        let currentUser = {
+            name: localStorage.getItem('jagomat_name') || 'Siswa Hebat',
+            school: localStorage.getItem('jagomat_school') || 'SDN 01 Nusantara'
+        };
+
+        let currentClass = 1;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let questions = [];
+        let allCloudScores = []; // Menyimpan cache data untuk filter sekolah
+
+        // Inisialisasi Saat Halaman Dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            updateUserUI();
+            // Jika belum pernah atur nama, buka modal otomatis
+            if (!localStorage.getItem('jagomat_name')) {
+                setTimeout(openProfileModal, 600);
+            }
+        });
+
+        function updateUserUI() {
+            const userInfoEl = document.getElementById('userInfo');
+            userInfoEl.innerHTML = `<span>👤 <b>${escapeHtml(currentUser.name)}</b> (${escapeHtml(currentUser.school)})</span>`;
+        }
+
+        // --- MANAJEMEN PROFIL ---
+        function openProfileModal() {
+            document.getElementById('inputStudentName').value = currentUser.name === 'Siswa Hebat' ? '' : currentUser.name;
+            document.getElementById('inputSchoolName').value = currentUser.school === 'SDN 01 Nusantara' ? '' : currentUser.school;
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profileModal').classList.add('hidden');
+        }
+
+        function saveProfile() {
+            const nameVal = document.getElementById('inputStudentName').value.trim();
+            const schoolVal = document.getElementById('inputSchoolName').value.trim();
+
+            if (!nameVal || !schoolVal) {
+                alert('Nama Siswa dan Nama Sekolah wajib diisi ya!');
+                return;
+            }
+
+            currentUser.name = nameVal;
+            currentUser.school = schoolVal;
+
+            localStorage.setItem('jagomat_name', nameVal);
+            localStorage.setItem('jagomat_school', schoolVal);
+
+            updateUserUI();
+            closeProfileModal();
+        }
+
+        // --- NAVIGASI TAMPILAN ---
+        function goHome() {
+            document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('quizView').classList.add('hidden');
+            document.getElementById('resultView').classList.add('hidden');
+        }
+
+        // --- GENERATOR SOAL KELAS 1 SAMPAI 6 ---
+        function startQuiz(classNum) {
+            currentClass = classNum;
+            currentQuestionIndex = 0;
+            score = 0;
+            questions = generateQuestionsForClass(classNum);
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('resultView').classList.add('hidden');
+            document.getElementById('quizView').classList.remove('hidden');
+
+            document.getElementById('quizClassBadge').innerText = `Kelas ${classNum}`;
+            renderQuestion();
+        }
+
+        function generateQuestionsForClass(cls) {
+            let qList = [];
+            for (let i = 0; i < 10; i++) {
+                let num1, num2, op, ans, text;
+                if (cls === 1) {
+                    // Kelas 1: Penjumlahan & pengurangan 1 - 20
+                    num1 = Math.floor(Math.random() * 10) + 1;
+                    num2 = Math.floor(Math.random() * 10) + 1;
+                    op = Math.random() > 0.5 ? '+' : '-';
+                    if (op === '-' && num1 < num2) [num1, num2] = [num2, num1]; // hindari minus
+                    ans = op === '+' ? num1 + num2 : num1 - num2;
+                    text = `${num1} ${op} ${num2} = ?`;
+                } else if (cls === 2) {
+                    // Kelas 2: Penjumlahan/pengurangan sampai 100
+                    num1 = Math.floor(Math.random() * 40) + 10;
+                    num2 = Math.floor(Math.random() * 30) + 5;
+                    op = Math.random() > 0.5 ? '+' : '-';
+                    if (op === '-' && num1 < num2) [num1, num2] = [num2, num1];
+                    ans = op === '+' ? num1 + num2 : num1 - num2;
+                    text = `${num1} ${op} ${num2} = ?`;
+                } else if (cls === 3) {
+                    // Kelas 3: Perkalian dasar
+                    num1 = Math.floor(Math.random() * 9) + 2;
+                    num2 = Math.floor(Math.random() * 9) + 2;
+                    ans = num1 * num2;
+                    text = `${num1} × ${num2} = ?`;
+                } else if (cls === 4) {
+                    // Kelas 4: Perkalian/pembagian angka lebih besar
+                    if (Math.random() > 0.5) {
+                        num1 = Math.floor(Math.random() * 12) + 5;
+                        num2 = Math.floor(Math.random() * 10) + 2;
+                        ans = num1 * num2;
+                        text = `${num1} × ${num2} = ?`;
+                    } else {
+                        num2 = Math.floor(Math.random() * 8) + 2;
+                        let multiplier = Math.floor(Math.random() * 10) + 2;
+                        num1 = num2 * multiplier;
+                        ans = multiplier;
+                        text = `${num1} ÷ ${num2} = ?`;
+                    }
+                } else if (cls === 5) {
+                    // Kelas 5: Pecahan sederhana / Operasi campuran
+                    num1 = Math.floor(Math.random() * 15) + 5;
+                    num2 = Math.floor(Math.random() * 15) + 5;
+                    let num3 = Math.floor(Math.random() * 10) + 1;
+                    ans = (num1 + num2) - num3;
+                    text = `(${num1} + ${num2}) - ${num3} = ?`;
+                } else {
+                    // Kelas 6: Aljabar sederhana / Kelipatan persekutuan
+                    let x = Math.floor(Math.random() * 8) + 2;
+                    let coef = Math.floor(Math.random() * 5) + 2;
+                    let konstanta = Math.floor(Math.random() * 20) + 5;
+                    let hasil = (coef * x) + konstanta;
+                    ans = x;
+                    text = `Jika ${coef} × n + ${konstanta} = ${hasil}, berapa nilai n?`;
+                }
+
+                // Buat pilihan ganda
+                let options = [ans];
+                while (options.length < 4) {
+                    let diff = Math.floor(Math.random() * 5) + 1;
+                    let fakeAns = Math.random() > 0.5 ? ans + diff : ans - diff;
+                    if (fakeAns >= 0 && !options.includes(fakeAns)) {
+                        options.push(fakeAns);
+                    }
+                }
+                options.sort(() => Math.random() - 0.5);
+
+                qList.push({ text, ans, options });
+            }
+            return qList;
+        }
+
+        function renderQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                finishQuiz();
+                return;
+            }
+
+            const q = questions[currentQuestionIndex];
+            document.getElementById('questionCounter').innerText = `Soal ${currentQuestionIndex + 1} dari 10`;
+            document.getElementById('questionText').innerText = q.text;
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = '';
+
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full bg-indigo-50/80 hover:bg-indigo-600 hover:text-white border-2 border-indigo-200 text-indigo-900 font-bold py-4 px-6 rounded-2xl text-xl shadow-sm transition transform hover:scale-[1.01]";
+                btn.innerText = opt;
+                btn.onclick = () => selectAnswer(opt, q.ans);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(selected, correct) {
+            if (selected === correct) {
+                score += 10;
+            }
+            currentQuestionIndex++;
+            renderQuestion();
+        }
+
+        function finishQuiz() {
+            document.getElementById('quizView').classList.add('hidden');
+            document.getElementById('resultView').classList.remove('hidden');
+            document.getElementById('finalScore').innerText = score;
+
+            let emoji = '🎉';
+            if (score === 100) emoji = '🏆 Bintang Kelas!';
+            else if (score >= 70) emoji = '🌟 Hebat Sekali!';
+            else emoji = '💪 Tetap Semangat Belajar!';
+            document.getElementById('resultEmoji').innerText = emoji;
+
+            // Simpan ke Cloud Database
+            saveScoreToCloud(score);
+        }
+
+        function restartQuiz() {
+            startQuiz(currentClass);
+        }
+
+        // --- FIREBASE CLOUD STORAGE & LEADERBOARD ---
+        async function saveScoreToCloud(finalScore) {
+            const dataToSave = {
+                name: currentUser.name,
+                school: currentUser.school,
+                classNum: currentClass,
+                score: finalScore,
+                timestamp: window.isFirebaseConnected ? window.FirebaseServerTimestamp || new Date() : new Date()
+            };
+
+            // Simpan ke Local Fallback dulu
+            let localScores = JSON.parse(localStorage.getItem('jagomat_scores') || '[]');
+            localScores.push(dataToSave);
+            localStorage.setItem('jagomat_scores', JSON.stringify(localScores));
+
+            if (!window.db || !window.isFirebaseConnected) {
+                console.log("Skor tersimpan di local mode.");
+                return;
+            }
+
+            try {
+                await window.addDoc(window.collection(window.db, "skor_matematika_sd"), {
+                    name: currentUser.name,
+                    school: currentUser.school,
+                    classNum: currentClass,
+                    score: finalScore,
+                    createdAt: window.serverTimestamp()
+                });
+                console.log("Skor sukses dikirim ke Cloud Firestore!");
+            } catch (err) {
+                console.error("Gagal simpan ke cloud, menggunakan local:", err);
+            }
+        }
+
+        async function openLeaderboard() {
+            document.getElementById('leaderboardModal').classList.remove('hidden');
+            await loadLeaderboardData();
+        }
+
+        function closeLeaderboard() {
+            document.getElementById('leaderboardModal').classList.add('hidden');
+        }
+
+        async function loadLeaderboardData() {
+            const container = document.getElementById('leaderboardListContainer');
+            container.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">Memuat data papan skor...</div>`;
+
+            let scores = [];
+
+            // Ambil dari local storage sebagai dasar
+            let localScores = JSON.parse(localStorage.getItem('jagomat_scores') || '[]');
+            scores = [...localScores];
+
+            // Jika firebase aktif, ambil data online
+            if (window.db && window.isFirebaseConnected) {
+                try {
+                    const q = window.query(window.collection(window.db, "skor_matematika_sd"), window.orderBy("score", "desc"), window.limit(50));
+                    const querySnapshot = await window.getDocs(q);
+                    let cloudScores = [];
+                    querySnapshot.forEach((doc) => {
+                        cloudScores.push(doc.data());
+                    });
+                    if (cloudScores.length > 0) {
+                        scores = cloudScores;
+                    }
+                } catch (e) {
+                    console.log("Menggunakan data lokal untuk leaderboard.");
+                }
+            }
+
+            // Urutkan skor tertinggi ke terendah
+            scores.sort((a, b) => b.score - a.score);
+            allCloudScores = scores;
+
+            populateSchoolDropdown(scores);
+            renderLeaderboardList(scores);
+        }
+
+        function populateSchoolDropdown(scores) {
+            const dropdown = document.getElementById('schoolFilterDropdown');
+            const currentSelected = dropdown.value;
+
+            // Ambil daftar sekolah unik
+            const schools = [...new Set(scores.map(s => s.school))];
+
+            let html = `<option value="ALL">🌐 Semua Sekolah (Global)</option>`;
+            schools.forEach(school => {
+                if (school) {
+                    html += `<option value="${escapeHtml(school)}">${escapeHtml(school)}</option>`;
+                }
+            });
+
+            dropdown.innerHTML = html;
+            dropdown.value = schools.includes(currentSelected) || currentSelected === 'ALL' ? currentSelected : 'ALL';
+        }
+
+        function filterLeaderboardBySchool() {
+            const selectedSchool = document.getElementById('schoolFilterDropdown').value;
+            let filtered = allCloudScores;
+
+            if (selectedSchool !== 'ALL') {
+                filtered = allCloudScores.filter(s => s.school === selectedSchool);
+            }
+
+            renderLeaderboardList(filtered);
+        }
+
+        function renderLeaderboardList(scores) {
+            const container = document.getElementById('leaderboardListContainer');
+
+            if (scores.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-gray-400 text-sm">Belum ada data skor yang tersimpan. Ayo kerjakan kuis sekarang!</div>`;
+                return;
+            }
+
+            let html = '';
+            scores.forEach((item, index) => {
+                let medal = `#${index + 1}`;
+                let badgeColor = 'bg-gray-100 text-gray-700';
+                if (index === 0) { medal = '🥇'; badgeColor = 'bg-yellow-100 text-yellow-800 font-bold'; }
+                else if (index === 1) { medal = '🥈'; badgeColor = 'bg-slate-100 text-slate-700 font-bold'; }
+                else if (index === 2) { medal = '🥉'; badgeColor = 'bg-amber-100 text-amber-800 font-bold'; }
+
+                html += `
+                    <div class="flex items-center justify-between p-3.5 bg-gray-50/80 hover:bg-indigo-50/50 rounded-2xl border border-gray-100 transition">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 text-center text-lg font-extrabold ${badgeColor} py-1 rounded-xl">${medal}</span>
+                            <div>
+                                <h4 class="text-sm font-bold text-gray-900">${escapeHtml(item.name)}</h4>
+                                <p class="text-xs text-gray-500">🏫 ${escapeHtml(item.school)} • <span class="text-indigo-600 font-semibold">Kelas ${item.classNum || 1}</span></p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-lg font-extrabold text-indigo-600">${item.score}</span>
+                            <span class="text-xs text-gray-400 block">Poin</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Helper fungsi escape HTML untuk keamanan XSS
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+    </script>
+</body>
+</html>
